@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+        }
+
+        body.loading .modal {
+            overflow: hidden;
+        }
+
+        body.loading .modal {
+            display: block;
+        }
+
+
+
+
+        th, td {
+            border: 1px solid black;
+            padding: 5px;
+        }
+
+        table {
+            width: 50%;
+            border-collapse: collapse
+        }
+    </style>
+    <script src="../Scripts/jquery-3.4.1.js"></script>
+    <script>
+        let webRoot = "http://localhost:64517";
+        var i = 1;
+        function createLine(line) {
+            return `<tr>
+                    <td>${i++}</td>
+                    <td>${line.store_name}</td>
+                    <td>${line.product_name}</td>
+                    <td>${line.product_id}</td>
+                    <td>${line.list_price}</td>
+                    <td>${line.store_quantity}</td>
+                    <td>${line.order_quantity}</td>
+                    <td>${line.amount_of_missing_units}</td>
+                    <td>${line.sales_loss}</td>
+                </tr>`;
+        }
+        function createTitles() {
+            var title = `<tr>
+            <th>***</th>
+            <th>שם החנות</th>
+            <th>שם הפריט</th>
+            <th>מק"ט</th>
+            <th>מחיר יחידה</th>
+            <th>מלאי בחנות</th>
+            <th>סך הזמנות</th>
+            <th>יחידות חסרות</th>
+            <th>הפסד מכירות מוערך</th>
+        </tr>`
+            $("#table").append(title);
+        }
+        function sendSearch() {
+            i = 1;
+            var storeName = $("#store_name").val();
+            var productName = $("#product_name").val();
+
+            var DTOSerach = {
+                store_name: storeName,
+                product_name: productName
+            }
+
+            $.ajax({
+                dataType: "json",			                //סוג הנתונים שאנחנו מצפים לקבל מהשרת
+                url: "/api/InventoryMissingStore",			            //הכתובת לשרת ולפונקציה
+                contentType: "application/json",		   //סוג הנתונים שאנחנו שולחים לשרת
+                type: "POST",				              //סוג הפעולה
+                data: JSON.stringify(DTOSerach),			//הנתונים עצמם שאנחנו שולחים
+                success: function (data) {
+                    var title = $("#table").first().clone();
+                    $("#table").empty();
+                    createTitles();
+
+                    for (var i = 0; i < data.le)
+                    for (var i = 0; i < data.length; i++) {
+                        $("#table").append(createLine(data[i]));
+                    }
+                    $body = $("body");
+
+                    $(document).on({
+                        ajaxStart: function () { $body.addClass("loading"); },
+                        ajaxStop: function () { $body.removeClass("loading"); }
+                    });
+
+                },
+                error: function (err) {
+                    //פונקציה שתופעל במקרה של שגיאה
+                    console.log(err);
+                }
+
+            })
+        }
+    </script>
+
+</head>
+<body dir="rtl">
+    <div>
+        <a href="HtmlPartA.html">דו"ח מנהלים</a>
+        <a href="HtmlPartB.html">עידכון הזמנות</a>
+    </div>
+    <div>
+        <input type="text" placeholder="שם חנות" id="store_name" />
+        <input type="text" placeholder="שם מוצר" id="product_name" />
+        <input type="button" value="חפש" id="search" onclick="sendSearch()" />
+    </div>
+    <table id="table">
+        <tr>
+            <th>***</th>
+            <th>שם החנות</th>
+            <th>שם הפריט</th>
+            <th>מק"ט</th>
+            <th>מחיר יחידה</th>
+            <th>מלאי בחנות</th>
+            <th>סך הזמנות</th>
+            <th>יחידות חסרות</th>
+            <th>הפסד מכירות מוערך</th>
+        </tr>
+    </table>
+    <div class="modal"><!-- Place at bottom of page --></div>
+
+</body>
+</html>

@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+        }
+
+        body.loading .modal {
+            overflow: hidden;
+        }
+
+        body.loading .modal {
+            display: block;
+        }
+
+
+
+
+        th, td {
+            border: 1px solid black;
+            padding: 5px;
+        }
+
+        table {
+            width: 50%;
+            border-collapse: collapse
+        }
+    </style>
+    <script src="../Scripts/jquery-3.4.1.js"></script>
+    <script>
+        let webRoot = "http://localhost:64517";
+        var i = 0;
+        function createLine(line) {
+            var res = `<tr>
+                        <td>${i}</td>
+                        <td>${line.full_name}</td>
+                        <td><input type="text" value="${line.email}" id="email${line.customer_id}"/></td>
+                        <td>${line.store_name}</td>
+                        <td>${line.order_date}</td>
+                        <td>
+                            <select name="status" id="statusOrder${i}">
+                            <option value="pending">ממתינה</option>
+                            <option value="processing">בתהליך</option>
+                            <option value="canceled">מבוטלת</option>
+                            <option value="completed">הושלמה</option>
+                            </select>
+                        </td>
+                        <td>${line.total_price}</td>
+                        <td><input type="button" value="שמירה" onclick="sendUptadet(${line.customer_id}, ${line.order_id}, ${i})"/></td>
+                    </tr>`;
+            i++;
+            return res;
+        }
+        function createTitles() {
+            var title = `<tr>
+                            <th>***</th>
+                            <th>שם הלקוח</th>
+                            <th>מייל</th>
+                            <th>שם החנות</th>
+                            <th>תאריך הזמנה</th>
+                            <th>מצב הזמנה</th>
+                            <th>סה"כ לתשלום</th>
+                            <th>עדכון הזמנה</th>
+                        </tr>`
+            $("#table").append(title);
+        }
+        
+        function sendSearch() {
+            i = 1;
+            //These ? statemant to make sure the valus is not null (with the first reload)
+            var storeName = ($("#store_name").val()) == null ? "" : $("#store_name").val();
+            var customerName = ($("#customer_name").val()) == null ? "" : $("#customer_name").val();
+            var customerEmail = ($("#customer_email").val()) == null ? "" : $("#customer_email").val();
+
+
+            var DTOSerachToUpdateTable = {
+                store_name: storeName,
+                customer_name: customerName,
+                customer_email: customerEmail
+            }
+            
+            $.ajax({
+                dataType: "json",			             
+                url: "/api/CustomersWithOpenOrders",			         
+                contentType: "application/json",		
+                type: "POST",				           
+                data: JSON.stringify(DTOSerachToUpdateTable),	
+                success: function (data) {
+                    var title = $("#table").first().clone();
+                    $("#table").empty();
+                    createTitles();
+                    for (var i = 0; i < data.length; i++) {
+                        $("#table").append(createLine(data[i]));
+                        var vala = data[i].order_status;
+                        $("#statusOrder" + (i + 1)).val(data[i].order_status);
+                    }
+                    $body = $("body");
+
+                    $(document).on({
+                        ajaxStart: function () { $body.addClass("loading"); },
+                        ajaxStop: function () { $body.removeClass("loading"); }
+                    });
+
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+
+            })
+        }
+
+        function sendUptadet(customerID, orderID, indexOrder) {
+            var UpdateDetailsDTO = {
+                customer_id : customerID,
+                order_id: orderID,
+                email: $("#email" + customerID).val(),
+                order_status : $("#statusOrder" + indexOrder).val(),
+            }
+            $.ajax({
+                dataType: "json",			               
+                url: "/api/UpdateOrders",			         
+                contentType: "application/json",		 
+                type: "POST",				            
+                data: JSON.stringify(UpdateDetailsDTO),			
+                success: function (data) {
+                    sendSearch();
+                    $("#msg").html(data);
+                },
+                error: function (err) {
+                    sendSearch();
+                    $("#msg").html(err.responseText);
+                }
+
+            })
+        }
+
+        $(document).ready(sendSearch());
+
+    </script>
+
+</head>
+<body dir="rtl">
+    <div>
+        <a href="HtmlPartA.html">דו"ח מנהלים</a>
+        <a href="HtmlPartB.html">עידכון הזמנות</a>
+    </div>
+    <div>
+        <input type="text" placeholder="שם הלקוח" id="customer_name" onkeyup="sendSearch()" />
+        <input type="text" placeholder="מייל הלקוח" id="customer_email" onkeyup="sendSearch()" />
+        <input type="text" placeholder="שם החנות" id="store_name" onkeyup="sendSearch()" />
+    </div>
+
+
+    <div style="height:80vh; overflow-y:scroll; float:right" >
+        <table id="table">
+            <tr>
+                <th>***</th>
+                <th>שם הלקוח</th>
+                <th>
+                    מייל
+                    <!--<input type="text" />-->
+                </th>
+                <th>שם החנות</th>
+                <th>תאריך הזמנה</th>
+                <th>מצב הזמנה</th>
+                <th>סה"כ לתשלום</th>
+                <th>עדכון הזמנה</th>
+
+            </tr>
+        </table>
+        <div class="modal"><!-- Place at bottom of page --></div>
+    </div>
+    <div><h id="msg"></h></div>
+
+</body>
+</html>

@@ -384,7 +384,7 @@
           <Property Name="shipped_date" Type="DateTime" Precision="0" />
           <Property Name="store_id" Type="Int32" Nullable="false" />
           <Property Name="staff_id" Type="Int32" Nullable="false" />
-          <Property Name="RowVersion" Type="Binary" MaxLength="8" FixedLength="true" Nullable="false" annotation:StoreGeneratedPattern="Computed" />
+          <Property Name="RowVersion" Type="Binary" MaxLength="8" FixedLength="true" Nullable="false" annotation:StoreGeneratedPattern="Computed" ConcurrencyMode="Fixed" />
           <NavigationProperty Name="customer" Relationship="Self.FK__orders__customer__20C1E124" FromRole="orders" ToRole="customers" />
           <NavigationProperty Name="order_items" Relationship="Self.FK__order_ite__order__267ABA7A" FromRole="orders" ToRole="order_items" />
           <NavigationProperty Name="staff" Relationship="Self.FK__orders__staff_id__22AA2996" FromRole="orders" ToRole="staffs" />
@@ -432,7 +432,7 @@
           <Property Name="store_id" Type="Int32" Nullable="false" />
           <Property Name="product_id" Type="Int32" Nullable="false" />
           <Property Name="quantity" Type="Int32" />
-          <Property Name="RowVersion" Type="Binary" MaxLength="8" FixedLength="true" Nullable="false" annotation:StoreGeneratedPattern="Computed" />
+          <Property Name="RowVersion" Type="Binary" MaxLength="8" FixedLength="true" Nullable="false" annotation:StoreGeneratedPattern="Computed" ConcurrencyMode="Fixed" />
           <NavigationProperty Name="product" Relationship="Self.FK__stocks__product___2B3F6F97" FromRole="stocks" ToRole="products" />
           <NavigationProperty Name="store" Relationship="Self.FK__stocks__store_id__2A4B4B5E" FromRole="stocks" ToRole="stores" />
         </EntityType>
